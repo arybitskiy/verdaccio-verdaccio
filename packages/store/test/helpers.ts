@@ -8,7 +8,9 @@ import { parseConfigFile } from '@verdaccio/config';
 import { Config, getDefaultConfig } from '@verdaccio/config';
 import { ConfigYaml, PackageUsers } from '@verdaccio/types';
 
-const debug = buildDebug('verdaccio:mock:config');
+const debug = buildDebug('verdaccio:storage:test:helpers');
+
+export const domain = 'https://registry.npmjs.org';
 
 /**
  * Override the default.yaml configuration file with any new config provided.

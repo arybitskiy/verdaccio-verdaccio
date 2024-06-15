@@ -16,6 +16,7 @@ import { Storage } from '../src';
 import {
   configExample,
   defaultRequestOptions,
+  domain,
   executeStarPackage,
   generateRandomStorage,
   getConfig,
@@ -23,7 +24,6 @@ import {
 
 setup({ type: 'stdout', format: 'pretty', level: 'trace' });
 
-const domain = 'https://registry.npmjs.org';
 const fakeHost = 'localhost:4873';
 const fooManifest = generatePackageMetadata('foo', '1.0.0');
 
@@ -59,7 +59,7 @@ describe('storage', () => {
     jest.clearAllMocks();
   });
 
-  describe('updateManifest', () => {
+  describe('publishing commands', () => {
     describe('publishing', () => {
       test('create private package', async () => {
         const mockDate = '2018-01-14T11:17:40.712Z';
@@ -112,6 +112,7 @@ describe('storage', () => {
       });
 
       // TODO: Review triggerUncaughtException exception on abort
+      // is not working as expected, throws but crash the test
       test.skip('abort creating a private package', async () => {
         const mockDate = '2018-01-14T11:17:40.712Z';
         MockDate.set(mockDate);
@@ -619,7 +620,6 @@ describe('storage', () => {
         ).rejects.toThrow();
       });
     });
-
     describe('owner', () => {
       test.each([
         ['foo', 'publishWithOwnerDefault.yaml'],
@@ -818,53 +818,52 @@ describe('storage', () => {
         }
       );
     });
-  });
-
-  describe('tokens', () => {
-    describe('saveToken', () => {
-      test('should retrieve tokens created', async () => {
-        const config = new Config(
-          configExample({
-            ...getDefaultConfig(),
-            storage: generateRandomStorage(),
-          })
-        );
-        const storage = new Storage(config);
-        await storage.init(config);
-        await storage.saveToken({
-          user: 'foo',
-          token: 'secret',
-          key: 'key',
-          created: 'created',
-          readonly: true,
+    describe('tokens', () => {
+      describe('saveToken', () => {
+        test('should retrieve tokens created', async () => {
+          const config = new Config(
+            configExample({
+              ...getDefaultConfig(),
+              storage: generateRandomStorage(),
+            })
+          );
+          const storage = new Storage(config);
+          await storage.init(config);
+          await storage.saveToken({
+            user: 'foo',
+            token: 'secret',
+            key: 'key',
+            created: 'created',
+            readonly: true,
+          });
+          const tokens = await storage.readTokens({ user: 'foo' });
+          expect(tokens).toEqual([
+            { user: 'foo', token: 'secret', key: 'key', readonly: true, created: 'created' },
+          ]);
         });
-        const tokens = await storage.readTokens({ user: 'foo' });
-        expect(tokens).toEqual([
-          { user: 'foo', token: 'secret', key: 'key', readonly: true, created: 'created' },
-        ]);
-      });
 
-      test('should delete a token created', async () => {
-        const config = new Config(
-          configExample({
-            ...getDefaultConfig(),
-            storage: generateRandomStorage(),
-          })
-        );
-        const storage = new Storage(config);
-        await storage.init(config);
-        await storage.saveToken({
-          user: 'foo',
-          token: 'secret',
-          key: 'key',
-          created: 'created',
-          readonly: true,
+        test('should delete a token created', async () => {
+          const config = new Config(
+            configExample({
+              ...getDefaultConfig(),
+              storage: generateRandomStorage(),
+            })
+          );
+          const storage = new Storage(config);
+          await storage.init(config);
+          await storage.saveToken({
+            user: 'foo',
+            token: 'secret',
+            key: 'key',
+            created: 'created',
+            readonly: true,
+          });
+          const tokens = await storage.readTokens({ user: 'foo' });
+          expect(tokens).toHaveLength(1);
+          await storage.deleteToken('foo', 'key');
+          const tokens2 = await storage.readTokens({ user: 'foo' });
+          expect(tokens2).toHaveLength(0);
         });
-        const tokens = await storage.readTokens({ user: 'foo' });
-        expect(tokens).toHaveLength(1);
-        await storage.deleteToken('foo', 'key');
-        const tokens2 = await storage.readTokens({ user: 'foo' });
-        expect(tokens2).toHaveLength(0);
       });
     });
   });
