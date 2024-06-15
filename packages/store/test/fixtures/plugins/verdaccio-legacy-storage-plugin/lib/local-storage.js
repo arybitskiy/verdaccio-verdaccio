@@ -114,7 +114,11 @@ class StoragePluginManage {
    * @param callback
    */
   readPackage(pkgName, callback) {
-    callback(null, { name: pkgName });
+    callback(null, {
+      name: pkgName,
+      'dist-tags': { latest: '1.0.0' },
+      versions: { '1.0.0': { pkgName } },
+    });
     /**
      * Example of implementation:
      * this.customStorage.read(name, (err, pkg: Package) => {

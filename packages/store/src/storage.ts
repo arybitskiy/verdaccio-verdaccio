@@ -450,7 +450,7 @@ class Storage {
     }
 
     // we have version, so we need to return specific version
-    const [convertedManifest] = await this.getPackageNext(options);
+    const [convertedManifest] = await this.getPackage(options);
 
     const version: Version | undefined = getVersion(convertedManifest.versions, queryVersion);
 
@@ -497,7 +497,7 @@ class Storage {
 
   public async getPackageManifest(options: IGetPackageOptionsNext): Promise<Manifest> {
     // convert dist remotes to local bars
-    const [manifest] = await this.getPackageNext(options);
+    const [manifest] = await this.getPackage(options);
 
     // If change access is requested (?write=true), then check if logged in user is allowed to change package
     if (options.byPassCache === true) {
@@ -1093,6 +1093,7 @@ class Storage {
     if (typeof storage === 'undefined') {
       throw errorUtils.getNotFound();
     }
+    // TODO: juan
     const hasPackage = await storage.hasPackage();
     debug('has package %o for %o', pkgName, hasPackage);
     return hasPackage;
@@ -1611,7 +1612,7 @@ class Storage {
    * @return {*}  {Promise<[Manifest, any[]]>}
    * @memberof AbstractStorage
    */
-  private async getPackageNext(options: IGetPackageOptionsNext): Promise<[Manifest, any[]]> {
+  private async getPackage(options: IGetPackageOptionsNext): Promise<[Manifest, any[]]> {
     const { name } = options;
     debug('get package for %o', name);
     let data: Manifest | null = null;
